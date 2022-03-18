@@ -15,9 +15,9 @@ public class Credit extends Account {
         Limit = AttachedBank.creditLimit;
     }
 
-    public double Limit;
+    public Double Limit;
 
-    public void changeBalance(double amountOfMoney) throws BanksException {
+    public void changeBalance(Double amountOfMoney) throws BanksException {
         if (amountOfMoney > AttachedBank.trustLimit && !AttachedClient.levelOfTrust)
             throw new BanksException("Incorrect input for Credit account!");
         if (Balance < 0)

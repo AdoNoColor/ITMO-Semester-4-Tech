@@ -28,7 +28,7 @@ public class CentralBank {
         currentDate = LocalDate.now();
     }
 
-    public Bank registerBank(String name, double limit, double percent, double commission, double trustLimit, double creditLimit) throws BanksException {
+    public Bank registerBank(String name, Double limit, Double percent, Double commission, Double trustLimit, Double creditLimit) throws BanksException {
         var bank = new Bank(name, limit, percent, commission, trustLimit, creditLimit);
 
         for(Bank anotherBank: banks){
@@ -63,15 +63,15 @@ public class CentralBank {
     }
 
 
-    public Operation transferMoney(Account accountFrom, Account accountTo, double amountOfMoney) throws BanksException {
+    public Operation transferMoney(Account accountFrom, Account accountTo, Double amountOfMoney) throws BanksException {
         return new Transferring(accountFrom, accountTo, amountOfMoney);
     }
 
-    public Operation withdrawMoney(Account account, double amountOfMoney) throws BanksException {
+    public Operation withdrawMoney(Account account, Double amountOfMoney) throws BanksException {
         return new Withdrawal(account, amountOfMoney);
     }
 
-    public Operation topUpBalance(Account account, double amountOfMoney) throws BanksException {
+    public Operation topUpBalance(Account account, Double amountOfMoney) throws BanksException {
         return new TopUp(account, amountOfMoney);
     }
 

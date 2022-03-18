@@ -9,10 +9,10 @@ import java.util.UUID;
 public class Withdrawal implements Operation {
     public String Id;
     public Accounts.Account Account;
-    public double AmountOfMoney;
-    public boolean isCancelled;
+    public Double AmountOfMoney;
+    public Boolean isCancelled;
 
-    public Withdrawal(Account account, double amountOfMoney) throws BanksException {
+    public Withdrawal(Account account, Double amountOfMoney) throws BanksException {
         Id = UUID.randomUUID().toString();
         Account = account;
         AmountOfMoney = amountOfMoney;

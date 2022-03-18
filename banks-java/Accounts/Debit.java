@@ -13,7 +13,7 @@ public class Debit extends Account {
         AccountType = Accounts.AccountType.Debit;
     }
 
-    public void changeBalance(double amountOfMoney) throws BanksException {
+    public void changeBalance(Double amountOfMoney) throws BanksException {
         Balance += amountOfMoney;
         if (Balance < 0)
             throw new BanksException("You have reached the minus!");

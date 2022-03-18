@@ -11,55 +11,58 @@ import java.util.Scanner;
 
 public class ConsoleInterface
 {
-    private Bank attachedBank;
+    private final Bank attachedBank;
     private final Scanner in = new Scanner(System.in);
 
-    public void startApplication(Bank attachedBank) throws BanksException {
-        System.out.flush();
+    public ConsoleInterface(Bank attachedBank){
+        this.attachedBank = attachedBank;
+    }
 
-        do {
-            Client client = authorize();
-            boolean exitMenuFlag = false;
-            while (!exitMenuFlag) {
-                menu();
-                int option = in.nextInt();
-                switch (option) {
-                    case 1 -> {
-                        subscribeToNotifications(client, attachedBank);
-                        System.out.flush();
-                    }
-                    case 2 -> {
-                        showAccounts(client);
-                        System.out.flush();
-                    }
-                    case 3 -> {
-                        registerAccount(client);
-                        System.out.flush();
-                    }
-                    case 4 -> {
-                        transferTransaction();
-                        System.out.flush();
-                    }
-                    case 5 -> {
-                        topUpTheBalance();
-                        System.out.flush();
-                    }
-                    case 6 -> {
-                        withdrawMoney();
-                        System.out.flush();
-                    }
-                    case 7 -> {
-                        exitMenuFlag = true;
-                        System.out.print("Bye bye," + client.name + " " + client.surname);
-                    }
+    public void startApplication() throws BanksException {
+        System.out.flush();
+        Client client = authorize();
+        boolean exitMenuFlag = false;
+
+        while (!exitMenuFlag) {
+            menu();
+            int option = in.nextInt();
+            switch (option) {
+                case 1 -> {
+                    subscribeToNotifications(client, attachedBank);
+                    System.out.flush();
+                }
+                case 2 -> {
+                    showAccounts(client);
+                    System.out.flush();
+                }
+                case 3 -> {
+                    registerAccount(client);
+                    System.out.flush();
+                }
+                case 4 -> {
+                    transferTransaction();
+                    System.out.flush();
+                }
+                case 5 -> {
+                    topUpTheBalance();
+                    System.out.flush();
+                }
+                case 6 -> {
+                    withdrawMoney();
+                    System.out.flush();
+                }
+                case 7 -> {
+                    exitMenuFlag = true;
+                    System.out.print("Bye bye, " + client.name + " " + client.surname);
                 }
             }
-        } while (true);
+
+        }
     }
 
     private void menu()
     {
-        System.out.print("Welcome to" + attachedBank.name + "!");
+        System.out.println("Welcome to " + attachedBank.name + "!\n");
         System.out.print("""
                 1 - Subscribe to notifications
                 2 - Show all Accounts
@@ -73,16 +76,15 @@ public class ConsoleInterface
 
     private Client authorize()
     {
-        System.out.print("Please type your name:");
+        System.out.print("Please type your name: ");
         attachedBank.clientBuilder.setName(in.nextLine());
-        System.out.print("Please type your surname:");
+        System.out.print("Please type your surname: ");
         attachedBank.clientBuilder.setSurname(in.nextLine());
-        System.out.print("Please type your address:");
+        System.out.print("Please type your address: ");
         attachedBank.clientBuilder.setAddress(in.nextLine());
-        System.out.print("Please type your passport number:");
+        System.out.print("Please type your passport number: ");
         attachedBank.clientBuilder.setPassportNumber(in.nextLine());
-        System.out.print("Please type your name:");
-        System.out.print("Thank you!:");
+        System.out.print("Thank you!\n");
         return attachedBank.clientBuilder.getClient();
     }
 
@@ -103,7 +105,7 @@ public class ConsoleInterface
 
     private void registerAccount(Client client)
     {
-        System.out.print("What type of an account do you want?");
+        System.out.print("What type of an account do you want?\n");
         System.out.print("""
                 1 - Debit
                 2 - Credit
@@ -111,19 +113,19 @@ public class ConsoleInterface
                 """);
         int accountType = in.nextInt();
         Account account = attachedBank.addAccount(client, accountType);
-        System.out.print("Account" + account.Id + "has been successfully created!");
+        System.out.print("Account" + account.Id + "has been successfully created!\n");
     }
 
     private void transferTransaction() throws BanksException {
         Account accountFrom = null;
         Account accountTo = null;
-        System.out.print("Please type the Id of your account:");
+        System.out.print("Please type the Id of your account: ");
         String idFrom = in.nextLine();
-        System.out.print("Please type the Id of an account in which you want to transfer your money:");
+        System.out.print("Please type the Id of an account in which you want to transfer your money: ");
         String idTo = in.nextLine();
-        System.out.print("Please type how much money you want to transfer:");
-        int balance = in.nextInt();
-        System.out.print("Does the another account belong to Our bank?");
+        System.out.print("Please type how much money you want to transfer: ");
+        Double balance = in.nextDouble();
+        System.out.print("Does the another account belong to Our bank?\n");
         System.out.print("""
                 1 - yes
                 2 - no
@@ -138,21 +140,21 @@ public class ConsoleInterface
                         accountTo = account;
                     if (accountFrom != null && accountTo != null)
                         CentralBank.getCentralBank().transferMoney(accountFrom, accountTo, balance);
-                    System.out.print("Transaction was successful!");
+                    System.out.print("Transaction was successful!\n");
                     break;
                 }
 
-                System.out.print("Something went wrong!");
+                System.out.print("Something went wrong!\n");
             }
             case 2 -> {
                 {
                     for (Bank bank : CentralBank.getCentralBank().getBanks()) {
-                        for (Account account : attachedBank.accounts) {
+                        for (Account account : bank.accounts) {
                             if (Objects.equals(idFrom, account.Id))
                                 accountFrom = account;
                             if (Objects.equals(idTo, account.Id))
                                 accountTo = account;
-                            System.out.print("Transaction was successful!");
+                            System.out.print("Transaction was successful!\n");
                             if (accountFrom == null || accountTo == null) continue;
                             CentralBank.getCentralBank().transferMoney(accountFrom, accountTo, balance);
                             break;
@@ -160,43 +162,44 @@ public class ConsoleInterface
                     }
                 }
 
-                System.out.print("Something went wrong!");
+                System.out.print("Something went wrong!\n");
             }
         }
     }
 
     private void topUpTheBalance() throws BanksException {
-        System.out.print("Please type the Id of your account:");
+        System.out.print("Please type the Id of your account: ");
         String id = in.nextLine();
-        System.out.print("How much money do you want to add?");
-        int balance = in.nextInt();
+        System.out.print("How much money do you want to add?\n");
+        Double balance = in.nextDouble();
+
         for (var account : attachedBank.accounts)
         {
-            if (Objects.equals(account.Id, id)){
+            if (Objects.equals(account.Id, id)) {
                 CentralBank.getCentralBank().topUpBalance(account, balance);
-                System.out.print("Transaction was successful!");
+                System.out.print("Transaction was successful!\n");
                 return;
             }
         }
 
-        System.out.print("Something went wrong!");
+        System.out.print("Something went wrong!\n");
     }
 
     private void withdrawMoney() throws BanksException {
-        System.out.print("Please type the Id of your account:");
+        System.out.print("Please type the Id of your account: ");
         String id = in.next();
-        System.out.print("How much money do you want to withdraw?");
-        int balance = in.nextInt();
+        System.out.print("How much money do you want to withdraw?\n");
+        Double balance = in.nextDouble();
         for (var account : attachedBank.accounts) if (Objects.equals(account.Id, id))
         {
-            if (Objects.equals(account.Id, id)){
+            if (Objects.equals(account.Id, id)) {
                 CentralBank.getCentralBank().withdrawMoney(account, balance);
-                System.out.print("Transaction was successful!");
+                System.out.print("Transaction was successful!\n");
                 return;
             }
         }
 
-        System.out.print("Something went wrong!");
+        System.out.print("Something went wrong!\n");
     }
 }
 

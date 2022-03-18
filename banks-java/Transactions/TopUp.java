@@ -6,12 +6,12 @@ import Tools.BanksException;
 import java.util.UUID;
 
 public class TopUp implements Operation {
-    public double money;
+    public Double money;
     public Accounts.Account account;
-    public boolean isCancelled;
+    public Boolean isCancelled;
     public String id;
 
-    public TopUp(Account account, double money) throws BanksException {
+    public TopUp(Account account, Double money) throws BanksException {
         id = UUID.randomUUID().toString();
         if (money < 0)
             throw new BanksException("Incorrect input");

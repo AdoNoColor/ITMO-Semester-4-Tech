@@ -14,7 +14,7 @@ import java.util.UUID;
 public abstract class Account {
     public Client AttachedClient;
     public Bank AttachedBank;
-    public double Balance;
+    public Double Balance;
     public LocalDate Time;
     public AccountType AccountType;
     public String Id;
@@ -24,13 +24,14 @@ public abstract class Account {
     public Account(Bank bank, Client client)
     {
         Id = UUID.randomUUID().toString();
+        Balance = 0.0;
         transactions = new ArrayList<>();
         AttachedBank = bank;
         AttachedClient = client;
         Time = CentralBank.getCentralBank().getDate();
     }
 
-    public abstract void changeBalance(double amountOfMoney) throws BanksException;
+    public abstract void changeBalance(Double amountOfMoney) throws BanksException;
 
     public abstract void spinTimeMechanism(LocalDate oldDate, LocalDate newDate) throws BanksException;
 
