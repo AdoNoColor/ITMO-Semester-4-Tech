@@ -17,11 +17,11 @@ public class Bank {
     public List<Client> clients = new ArrayList<>();
     public List<Account> accounts = new ArrayList<>();
     public String name;
-    public double depositLimit;
-    public double percent;
-    public double commission;
-    public double trustLimit;
-    public double creditLimit;
+    public Double depositLimit;
+    public Double percent;
+    public Double commission;
+    public Double trustLimit;
+    public Double creditLimit;
     public Clients.ClientBuilder clientBuilder = new ClientBuilder();
 
     public Bank(String name, double limit, double percent, double commission, double trustLimit, double creditLimit)
@@ -35,25 +35,25 @@ public class Bank {
         this.creditLimit = creditLimit;
     }
 
-    public void changeTrustLimit(double trustLimit)
+    public void changeTrustLimit(Double trustLimit)
     {
         this.trustLimit = trustLimit;
         notifications.handleEvent();
     }
 
-    public void changePercent(double percent)
+    public void changePercent(Double percent)
     {
         this.percent = percent;
         notifications.handleEvent();
     }
 
-    public void changeDepositLimit(double depositLimit)
+    public void changeDepositLimit(Double depositLimit)
     {
         this.depositLimit = depositLimit;
         notifications.handleEvent();
     }
 
-    public void changeCreditLimit(double creditLimit)
+    public void changeCreditLimit(Double creditLimit)
     {
         this.creditLimit = creditLimit;
         notifications.handleEvent();

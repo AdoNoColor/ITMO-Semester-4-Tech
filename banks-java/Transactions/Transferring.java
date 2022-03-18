@@ -10,10 +10,10 @@ public class Transferring implements Operation {
     public String Id;
     public Account AccountFrom;
     public Account AccountTo;
-    public double AmountOfMoney;
-    public boolean isCancelled;
+    public Double AmountOfMoney;
+    public Boolean isCancelled;
 
-    public Transferring(Account accountFrom, Account accountTo, double money) throws BanksException {
+    public Transferring(Account accountFrom, Account accountTo, Double money) throws BanksException {
         Id = UUID.randomUUID().toString();
         AccountFrom = accountFrom;
         AccountTo = accountTo;

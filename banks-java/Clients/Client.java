@@ -5,7 +5,7 @@ public class Client {
     public String surname;
     public String address;
     public String passportNumber;
-    public boolean levelOfTrust;
+    public Boolean levelOfTrust;
 
     public Client(String name, String surname, String address, String passportNumber)
     {

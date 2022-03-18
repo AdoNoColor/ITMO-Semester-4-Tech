@@ -9,8 +9,8 @@ import java.time.Period;
 
 public class Deposit extends Account {
     public LocalDate ExpirationDate;
-    public double Percent;
-    private boolean FirstReplenishment;
+    public Double Percent;
+    private Boolean FirstReplenishment;
 
 
     public Deposit(Bank bank, Client client) {
@@ -25,7 +25,7 @@ public class Deposit extends Account {
         ExpirationDate = expirationDate;
     }
 
-    public void changeBalance(double amountOfMoney) throws BanksException
+    public void changeBalance(Double amountOfMoney) throws BanksException
     {
         if (!FirstReplenishment)
         {
@@ -44,7 +44,7 @@ public class Deposit extends Account {
         Time = newDate;
     }
 
-    private void setPercent(double money)
+    private void setPercent(Double money)
     {
         if (money < 50000)
         {
