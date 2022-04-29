@@ -1,4 +1,4 @@
-package models;
+package com.AdoNoColor.domain.entity;
 
 public enum Color {
     BLACK,

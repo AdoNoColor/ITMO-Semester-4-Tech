@@ -1,8 +1,11 @@
-package models;
+package com.AdoNoColor.domain.entity;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,7 +13,8 @@ import java.util.UUID;
 @Table(name = "cats")
 public class Cat {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
 
     @Column(name = "name")
     private String name;
@@ -23,8 +27,9 @@ public class Cat {
     @Enumerated(EnumType.STRING)
     private Color color;
 
-    @Column(name = "birth_date")
-    private LocalDate date_of_birth;
+    @Column(name = "date_of_birth")
+    @JsonFormat(pattern="yyyy-MM-dd")
+    private Date date_of_birth;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
@@ -37,13 +42,12 @@ public class Cat {
     public Cat() {
     }
 
-    public Cat(String name, Breed breed, Color color, LocalDate date_of_birth) {
+    public Cat(String name, Breed breed, Color color, Date date_of_birth) {
         this.name = name;
         this.breed = breed;
         this.color = color;
         this.date_of_birth = date_of_birth;
         friends = new ArrayList<>();
-        id = UUID.randomUUID().toString();
     }
 
     public void setName(String name) {
@@ -58,7 +62,7 @@ public class Cat {
         this.color = color;
     }
 
-    public void setDate_of_birth(LocalDate date_of_birth) {
+    public void setDate_of_birth(Date date_of_birth) {
         this.date_of_birth = date_of_birth;
     }
 
@@ -66,7 +70,7 @@ public class Cat {
         this.owner = owner;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -82,7 +86,7 @@ public class Cat {
         return color;
     }
 
-    public LocalDate getDate_of_birth() {
+    public Date getDate_of_birth() {
         return date_of_birth;
     }
 
@@ -100,5 +104,9 @@ public class Cat {
 
     public void AddFriend(Cat cat) {
         this.friends.add(cat);
+    }
+
+    public void DeleteFriend(Cat cat) {
+        this.friends.remove(cat);
     }
 }
