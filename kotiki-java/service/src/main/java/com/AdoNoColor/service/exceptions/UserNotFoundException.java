@@ -1,0 +1,7 @@
+package com.AdoNoColor.service.exceptions;
+
+public class UserNotFoundException extends Exception {
+    public UserNotFoundException(String message) {
+        super(message);
+    }
+}

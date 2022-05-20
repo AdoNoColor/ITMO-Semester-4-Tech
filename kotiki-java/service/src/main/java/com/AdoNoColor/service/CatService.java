@@ -1,15 +1,14 @@
 package com.AdoNoColor.service;
 
-import com.AdoNoColor.domain.entity.Breed;
-import com.AdoNoColor.domain.entity.Cat;
-import com.AdoNoColor.domain.entity.Color;
-import com.AdoNoColor.domain.entity.Owner;
+import com.AdoNoColor.domain.entity.*;
 import com.AdoNoColor.domain.entity.model.CatModel;
 import com.AdoNoColor.repository.CatRepository;
 import com.AdoNoColor.repository.OwnerRepository;
+import com.AdoNoColor.repository.UserEntityRepository;
 import com.AdoNoColor.service.exceptions.CatAlreadyExistsException;
 import com.AdoNoColor.service.exceptions.CatNotFoundException;
 import com.AdoNoColor.service.exceptions.OwnerNotFoundException;
+import com.AdoNoColor.service.exceptions.UserRestrictionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +25,16 @@ public class CatService {
     @Autowired
     private OwnerRepository ownerRepo;
 
-    public Cat createCat(Cat cat, Integer owner_id) throws CatAlreadyExistsException {
+    @Autowired
+    private UserEntityRepository userRepo;
+
+    public Cat createCat(Cat cat, Integer owner_id, String username) throws CatAlreadyExistsException,
+            UserRestrictionException {
+        UserEntity user = userRepo.findByUsername(username);
+        if (user.getRole() == Role.USER.name() && user.getOwner().getId() != owner_id){
+            throw new UserRestrictionException("Forbidden for that type of user!");
+        }
+
         Owner owner = ownerRepo.findById(owner_id).get();
         cat.setOwner(owner);
         return catRepo.save(cat);
@@ -40,8 +48,12 @@ public class CatService {
         return CatModel.toModel(catRepo.findById(id).get());
     }
 
-    public Integer deleteCat(Integer id) throws CatNotFoundException {
+    public Integer deleteCat(Integer id, String username) throws CatNotFoundException, UserRestrictionException {
         Cat cat = catRepo.findById(id).get();
+        UserEntity user = userRepo.findByUsername(username);
+        if (user.getRole() == Role.USER.name() && user.getOwner().getId() != cat.getOwner().getId()){
+            throw new UserRestrictionException("Forbidden for that type of user!");
+        }
 
         if (cat == null) {
             throw new CatNotFoundException("Cat was not found!");
@@ -51,8 +63,13 @@ public class CatService {
         return id;
     }
 
-    public Cat updateCatName(Integer id, String name) throws CatNotFoundException {
+    public Cat updateCatName(Integer id, String name, String username) throws CatNotFoundException,
+            UserRestrictionException {
         Cat cat = catRepo.findById(id).get();
+        UserEntity user = userRepo.findByUsername(username);
+        if (user.getRole() == Role.USER.name() && user.getOwner().getId() != cat.getOwner().getId()){
+            throw new UserRestrictionException("Forbidden for that type of user!");
+        }
 
         if (cat == null) {
             throw new CatNotFoundException("User was not found!");
