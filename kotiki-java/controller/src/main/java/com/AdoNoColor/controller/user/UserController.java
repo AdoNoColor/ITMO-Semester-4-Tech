@@ -1,19 +1,18 @@
 package com.AdoNoColor.controller.user;
 
 import com.AdoNoColor.domain.entity.UserEntity;
-import com.AdoNoColor.service.CustomUserDetailService;
+import com.AdoNoColor.service.UserEntityService;
 import com.AdoNoColor.service.exceptions.UserAlreadyExistsException;
 import com.AdoNoColor.service.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
     @Autowired
-    private CustomUserDetailService userService;
+    private UserEntityService userService;
 
     @GetMapping
     public ResponseEntity getUser(@RequestParam Integer id) {

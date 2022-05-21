@@ -54,7 +54,7 @@ public class OwnerService {
         Owner owner = ownerRepo.findById(id).get();
         UserEntity user = userRepo.findByUsername(username);
 
-        if (user.getRole() == Role.USER.name() || user.getOwner().getId() != id) {
+        if (user.getRole() == Role.USER || user.getOwner().getId() != id) {
             throw new UserRestrictionException("Forbidden for that type of user!");
         }
 

@@ -1,6 +1,5 @@
 package com.AdoNoColor.domain.entity;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import javax.persistence.*;
 
@@ -55,8 +54,8 @@ public class UserEntity {
         this.password = password;
     }
 
-    public String getRole() {
-        return role.toString();
+    public Role getRole() {
+        return role;
     }
 
     public void setRole(Role role) {

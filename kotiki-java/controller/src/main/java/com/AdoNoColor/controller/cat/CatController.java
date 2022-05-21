@@ -2,7 +2,7 @@ package com.AdoNoColor.controller.cat;
 
 import com.AdoNoColor.domain.entity.*;
 import com.AdoNoColor.service.CatService;
-import com.AdoNoColor.service.CustomUserDetailService;
+import com.AdoNoColor.service.UserEntityService;
 import com.AdoNoColor.service.exceptions.CatAlreadyExistsException;
 import com.AdoNoColor.service.exceptions.CatNotFoundException;
 import com.AdoNoColor.service.exceptions.UserRestrictionException;
@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -19,11 +18,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/cats")
 public class CatController {
     @Autowired
-    private CustomUserDetailService userService;
+    private UserEntityService userService;
 
     @Autowired
     private CatService catService;
 
+    @PreAuthorize("hasAuthority('cats:write')")
     @PostMapping
     public ResponseEntity createCat(@RequestBody Cat cat,
                                     @RequestParam Integer owner_id,
@@ -38,7 +38,7 @@ public class CatController {
         }
     }
 
-
+    @PreAuthorize("hasAuthority('cats:write')")
     @DeleteMapping("/{id}")
     public ResponseEntity deleteCat(@PathVariable Integer id,
                                     @AuthenticationPrincipal UserDetails user) {
@@ -52,6 +52,7 @@ public class CatController {
         }
     }
 
+    @PreAuthorize("hasAuthority('cats:write')")
     @PutMapping
     public ResponseEntity updateCatName(@RequestParam Integer id,
                                         @RequestParam String name,
@@ -90,6 +91,7 @@ public class CatController {
         }
     }
 
+    @PreAuthorize("hasAuthority('cats:read')")
     @GetMapping
     public ResponseEntity getCat(@RequestParam Integer id) {
         try {
@@ -101,6 +103,7 @@ public class CatController {
         }
     }
 
+    @PreAuthorize("hasAuthority('cats:read')")
     @GetMapping("/allbycolor/{color}")
     public ResponseEntity getAllCatsByColor(@PathVariable Color color) {
         try {
@@ -110,6 +113,7 @@ public class CatController {
         }
     }
 
+    @PreAuthorize("hasAuthority('cats:read')")
     @GetMapping("/allbybreed/{breed}")
     public ResponseEntity getAllCatsByColor(@PathVariable Breed breed) {
         try {

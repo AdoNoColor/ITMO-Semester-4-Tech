@@ -25,7 +25,7 @@ public class UserModel {
         model.setId(user.getId());
         model.setPassword(user.getPassword());
         model.setUsername(user.getUsername());
-        model.setRole(user.getRole());
+        model.setRole(user.getRole().name());
         model.setOwnerModel(OwnerModel.toModel(user.getOwner()));
         return model;
     }

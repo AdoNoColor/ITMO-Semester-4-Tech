@@ -18,6 +18,7 @@ public class OwnerController {
     @Autowired
     private OwnerService ownerService;
 
+    @PreAuthorize("hasAuthority('owners:read')")
     @GetMapping
     public ResponseEntity getOwner(@RequestParam Integer id) {
         try {
@@ -29,20 +30,7 @@ public class OwnerController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PostMapping
-    public ResponseEntity createOwner(@RequestBody Owner owner) {
-        try {
-            ownerService.createOwner(owner);
-            return ResponseEntity.ok("Owner was successfully added!");
-        } catch  (OwnerAlreadyExistsException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('owners:write')")
     @DeleteMapping("/{id}")
     public ResponseEntity deleteOwner(@PathVariable Integer id) {
         try {
@@ -52,6 +40,7 @@ public class OwnerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @PutMapping
     public ResponseEntity updateOwnerName(@RequestParam Integer id,
                                           @RequestParam String name,

@@ -31,7 +31,7 @@ public class CatService {
     public Cat createCat(Cat cat, Integer owner_id, String username) throws CatAlreadyExistsException,
             UserRestrictionException {
         UserEntity user = userRepo.findByUsername(username);
-        if (user.getRole() == Role.USER.name() && user.getOwner().getId() != owner_id){
+        if (user.getRole() == Role.USER && user.getOwner().getId() != owner_id){
             throw new UserRestrictionException("Forbidden for that type of user!");
         }
 
@@ -51,7 +51,7 @@ public class CatService {
     public Integer deleteCat(Integer id, String username) throws CatNotFoundException, UserRestrictionException {
         Cat cat = catRepo.findById(id).get();
         UserEntity user = userRepo.findByUsername(username);
-        if (user.getRole() == Role.USER.name() && user.getOwner().getId() != cat.getOwner().getId()){
+        if (user.getRole() == Role.USER && user.getOwner().getId() != cat.getOwner().getId()){
             throw new UserRestrictionException("Forbidden for that type of user!");
         }
 
@@ -67,7 +67,7 @@ public class CatService {
             UserRestrictionException {
         Cat cat = catRepo.findById(id).get();
         UserEntity user = userRepo.findByUsername(username);
-        if (user.getRole() == Role.USER.name() && user.getOwner().getId() != cat.getOwner().getId()){
+        if (user.getRole() == Role.USER && user.getOwner().getId() != cat.getOwner().getId()){
             throw new UserRestrictionException("Forbidden for that type of user!");
         }
 
