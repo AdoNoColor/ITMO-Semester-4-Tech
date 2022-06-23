@@ -1,9 +1,9 @@
 package com.AdoNoColor.controller.user;
 
-import com.AdoNoColor.domain.entity.UserEntity;
+import com.AdoNoColor.domain.entity.model.UserModel;
 import com.AdoNoColor.service.UserEntityService;
-import com.AdoNoColor.service.exceptions.UserAlreadyExistsException;
-import com.AdoNoColor.service.exceptions.UserNotFoundException;
+import com.AdoNoColor.service.tools.KafkaTemplateTool;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,47 +14,29 @@ public class UserController {
     @Autowired
     private UserEntityService userService;
 
+    @Autowired
+    private KafkaTemplateTool kafkaTemplateTool;
+
+    @PostMapping("/create")
+    public ResponseEntity<UserModel> create(@RequestBody UserModel user) {
+        kafkaTemplateTool.kafkaUserTemplate.send("createUser", user);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping
-    public ResponseEntity getUser(@RequestParam Integer id) {
-        try {
-            return ResponseEntity.ok(userService.getUserById(id));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+    @SneakyThrows
+    public ResponseEntity<UserModel> getById(@RequestParam(value = "id") Integer id) {
+        UserModel userModel = new UserModel();
+        userModel.setId(id);
+        kafkaTemplateTool.kafkaUserTemplate.send("getUserById", userModel);
+        try
+        {
+            Thread.sleep(1000);
         }
-    }
-
-    @PostMapping
-    public ResponseEntity createUser(@RequestBody UserEntity user) {
-        try {
-            userService.createUser(user);
-            return ResponseEntity.ok("User successfully added!");
-        } catch (UserAlreadyExistsException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        catch(Exception e)
+        {
+            System.out.println(e);
         }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity deleteUser(@PathVariable Integer id) {
-        try {
-            return ResponseEntity.ok(userService.deleteUser(id));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PutMapping
-    public ResponseEntity updateUsername(@RequestParam Integer id,
-                                         @RequestParam String username) {
-        try {
-            return ResponseEntity.ok(userService.updateUserName(id, username));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return ResponseEntity.ok().body(userService.getUserModel());
     }
 }

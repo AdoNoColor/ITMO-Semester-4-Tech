@@ -1,17 +1,24 @@
 package com.AdoNoColor.controller.cat;
 
 import com.AdoNoColor.domain.entity.*;
+import com.AdoNoColor.domain.entity.model.CatModel;
 import com.AdoNoColor.service.CatService;
 import com.AdoNoColor.service.UserEntityService;
 import com.AdoNoColor.service.exceptions.CatAlreadyExistsException;
 import com.AdoNoColor.service.exceptions.CatNotFoundException;
 import com.AdoNoColor.service.exceptions.UserRestrictionException;
+import com.AdoNoColor.service.tools.KafkaTemplateTool;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 @RestController
@@ -23,103 +30,104 @@ public class CatController {
     @Autowired
     private CatService catService;
 
+    @Autowired
+    private KafkaTemplateTool kafkaTemplateTool;
+
+    @PreAuthorize("hasAuthority('cats:write')")
+    @PostMapping("/create")
+    public ResponseEntity<CatModel> createCat(@RequestBody CatModel cat) {
+        kafkaTemplateTool.kafkaKotikTemplate.send("createCat", cat);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAuthority('cats:write')")
+    @PostMapping("/{id}")
+    public ResponseEntity<CatModel> deleteCat(@RequestParam(value = "id") Integer id) {
+        CatModel cat = new CatModel();
+        cat.setId(id);
+        kafkaTemplateTool.kafkaKotikTemplate.send("deleteCat", cat);
+        return ResponseEntity.ok().build();
+    }
+
     @PreAuthorize("hasAuthority('cats:write')")
     @PostMapping
-    public ResponseEntity createCat(@RequestBody Cat cat,
-                                    @RequestParam Integer owner_id,
-                                    @AuthenticationPrincipal UserDetails user) {
-        try {
-            catService.createCat(cat, owner_id, user.getUsername());
-            return ResponseEntity.ok("Cat was successfully added!");
-        } catch (CatAlreadyExistsException | UserRestrictionException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<CatModel> UpdateCatName(@RequestBody CatModel catModel) {
+        kafkaTemplateTool.kafkaKotikTemplate.send("updateKotik", catModel);
+        return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('cats:write')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity deleteCat(@PathVariable Integer id,
-                                    @AuthenticationPrincipal UserDetails user) {
-        try {
-            catService.deleteCat(id, user.getUsername());
-            return ResponseEntity.ok("Cat was successfully deleted!");
-        } catch (CatNotFoundException | UserRestrictionException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PreAuthorize("hasAuthority('cats:write')")
-    @PutMapping
-    public ResponseEntity updateCatName(@RequestParam Integer id,
-                                        @RequestParam String name,
-                                        @AuthenticationPrincipal UserEntity user) {
-        try {
-            catService.updateCatName(id, name, user.getUsername());
-            return ResponseEntity.ok("Cat was successfully added!");
-        } catch (CatNotFoundException | UserRestrictionException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PutMapping("/{cat1_id}+{cat2_id}")
-    public ResponseEntity addFriend(@PathVariable Integer cat1_id,
-                                    @PathVariable Integer cat2_id){
-        try {
-            catService.makeCatsFriends(cat1_id, cat2_id);
-            return ResponseEntity.ok("Friendship was made between these two!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    @PostMapping(("/{cat1_id}+{cat2_id}"))
+    public ResponseEntity<CatModel> AddFriend(@PathVariable Integer cat1_id,
+                                              @PathVariable Integer cat2_id) {
+        CatModel cat1 = new CatModel();
+        CatModel cat2 = new CatModel();
+        cat1.setId(cat1_id);
+        cat2.setId(cat2_id);
+        List<CatModel> cats = new ArrayList<>();
+        cats.add(cat1);
+        cats.add(cat2);
+        kafkaTemplateTool.kafkaKotikiTemplate.send("addFriend", cats);
+        return ResponseEntity.ok().build();
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/deleteFriendship")
     public ResponseEntity deleteFriendship(@RequestParam Integer cat1_id,
                                     @RequestParam Integer cat2_id){
-        try {
-            catService.deleteCatsFriendship(cat1_id, cat2_id);
-            return ResponseEntity.ok("Friendship was deleted between these two!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        CatModel cat1 = new CatModel();
+        CatModel cat2 = new CatModel();
+        cat1.setId(cat1_id);
+        cat2.setId(cat2_id);
+        List<CatModel> cats = new ArrayList<>();
+        cats.add(cat1);
+        cats.add(cat2);
+        kafkaTemplateTool.kafkaKotikiTemplate.send("deleteFriend", cats);
+        return ResponseEntity.ok().build();
     }
 
     @PreAuthorize("hasAuthority('cats:read')")
     @GetMapping
-    public ResponseEntity getCat(@RequestParam Integer id) {
+    @SneakyThrows
+    public ResponseEntity<CatModel> getCatById(@RequestParam(value = "id") Integer id) {
+        CatModel cat = new CatModel();
+        cat.setId(id);
+        kafkaTemplateTool.kafkaKotikTemplate.send("SearchByIdKotik", cat);
         try {
-            return ResponseEntity.ok(catService.getCat(id));
-        } catch (CatNotFoundException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Thread.sleep(1000);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            System.out.println(e);
         }
+        return ResponseEntity.ok().body(catService.getCatModel());
     }
 
+    @SneakyThrows
     @PreAuthorize("hasAuthority('cats:read')")
     @GetMapping("/allbycolor/{color}")
-    public ResponseEntity getAllCatsByColor(@PathVariable Color color) {
+    public ResponseEntity<Collection<CatModel>> GetByColor(@RequestParam(value = "color") Color color) {
+        CatModel cat = new CatModel();
+        cat.setColor(color);
+        kafkaTemplateTool.kafkaKotikTemplate.send("getByColor", cat);
         try {
-            return ResponseEntity.ok(catService.getAllCatsByColor(color));
+            Thread.sleep(1000);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            System.out.println(e);
         }
+        return ResponseEntity.ok().body(catService.getCatsModel());
+
     }
 
     @PreAuthorize("hasAuthority('cats:read')")
     @GetMapping("/allbybreed/{breed}")
-    public ResponseEntity getAllCatsByColor(@PathVariable Breed breed) {
+    public ResponseEntity<Collection<CatModel>> GetByColor(@RequestParam(value = "breed") Breed breed) {
+        CatModel cat = new CatModel();
+        cat.setBreed(breed);
+        kafkaTemplateTool.kafkaKotikTemplate.send("getByBreed", cat);
         try {
-            return ResponseEntity.ok(catService.getAllCatsByBreed(breed));
+            Thread.sleep(1000);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            System.out.println(e);
         }
+        return ResponseEntity.ok().body(catService.getCatsModel());
     }
+
 }

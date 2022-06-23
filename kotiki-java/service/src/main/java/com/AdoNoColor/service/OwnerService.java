@@ -1,69 +1,44 @@
 package com.AdoNoColor.service;
 
-import com.AdoNoColor.domain.entity.Owner;
-import com.AdoNoColor.domain.entity.Role;
-import com.AdoNoColor.domain.entity.UserEntity;
+
 import com.AdoNoColor.domain.entity.model.OwnerModel;
-import com.AdoNoColor.repository.OwnerRepository;
-import com.AdoNoColor.repository.UserEntityRepository;
-import com.AdoNoColor.service.exceptions.OwnerAlreadyExistsException;
-import com.AdoNoColor.service.exceptions.OwnerNotFoundException;
-import com.AdoNoColor.service.exceptions.UserRestrictionException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.List;
 
 @Service
 public class OwnerService {
-    @Autowired
-    private UserEntityRepository userRepo;
+    private OwnerModel ownerModel;
+    private List<OwnerModel> ownersModel;
 
-    @Autowired
-    private OwnerRepository ownerRepo;
-
-    public Owner createOwner(Owner owner) throws OwnerAlreadyExistsException {
-        if (ownerRepo.findById(owner.getId()) != null) {
-            throw new OwnerAlreadyExistsException("Owner has already been registered!");
-        }
-
-        return ownerRepo.save(owner);
+    public OwnerService() {
     }
 
-    public Integer deleteOwner(Integer id) throws OwnerNotFoundException {
-        Owner owner = ownerRepo.findById(id).get();
-
-        if (owner == null) {
-            throw new OwnerNotFoundException("User was not found!");
-        }
-
-        ownerRepo.delete(owner);
-        return id;
+    @KafkaListener(topics = "sendOwner")
+    public void getOwner(OwnerModel ownerDto) {
+        this.ownerModel = ownerModel;
     }
 
-    public OwnerModel getOwnerById(Integer id) throws OwnerNotFoundException {
-        Owner owner = ownerRepo.findById(id).get();
-
-        if (owner == null) {
-            throw new OwnerNotFoundException("User was not found!");
-        }
-
-        return OwnerModel.toModel(owner);
+    @KafkaListener(topics = "sendOwners")
+    public void getOwners(List<OwnerModel> ownersDto) {
+        this.ownersModel = ownersModel;
     }
 
-    public Owner updateOwnerName(Integer id, String name, String username) throws OwnerNotFoundException,
-            UserRestrictionException {
-        Owner owner = ownerRepo.findById(id).get();
-        UserEntity user = userRepo.findByUsername(username);
+    public OwnerModel getOwnerModel() {
+        return ownerModel;
+    }
 
-        if (user.getRole() == Role.USER || user.getOwner().getId() != id) {
-            throw new UserRestrictionException("Forbidden for that type of user!");
-        }
+    public void setOwnerModel(OwnerModel ownerModel) {
+        this.ownerModel = ownerModel;
+    }
 
-        if (owner == null) {
-            throw new OwnerNotFoundException("User was not found!");
-        }
+    public List<OwnerModel> getOwnersModel() {
+        return ownersModel;
+    }
 
-        owner.setName(name);
-
-        return ownerRepo.save(owner);
+    public void setOwnersModel(List<OwnerModel> ownersModel) {
+        this.ownersModel = ownersModel;
     }
 }

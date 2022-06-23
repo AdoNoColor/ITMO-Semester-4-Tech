@@ -6,67 +6,84 @@ import com.AdoNoColor.repository.OwnerRepository;
 import com.AdoNoColor.repository.UserEntityRepository;
 import com.AdoNoColor.service.exceptions.UserAlreadyExistsException;
 import com.AdoNoColor.service.exceptions.UserNotFoundException;
+import com.AdoNoColor.service.tools.KafkaTemplateTool;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
-public class UserEntityService {
-    @Autowired
-    private UserEntityRepository userRepo;
+public class UserEntityService implements UserDetailsService {
+
+    private UserModel userModel;
+    private List<UserModel> usersModel;
 
     @Autowired
-    private OwnerRepository ownerRepo;
+    private KafkaTemplateTool kafkaTemplate;
 
-    public UserEntity createUser(UserEntity user) throws UserAlreadyExistsException {
-        if (userRepo.findByUsername(user.getUsername()) != null) {
-            throw new UserAlreadyExistsException("User has already been registered!");
-        }
-
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        ownerRepo.save(user.getOwner());
-        return userRepo.save(user);
+    public UserEntityService() {
     }
 
-    public Integer deleteUser(Integer id) throws UserNotFoundException {
-        UserEntity user = userRepo.findById(id).get();
-
-        if (user == null) {
-            throw new UserNotFoundException("User was not found!");
+    @Override
+    @SneakyThrows
+    @Transactional
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UserModel user = new UserModel();
+        kafkaTemplate.KafkaStringTemplate.send("loadUserByUsername", username);
+        try
+        {
+            Thread.sleep(1000);
         }
-
-        userRepo.delete(user);
-        return id;
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+        user = userModel;
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if(user == null){
+            throw new UsernameNotFoundException("user not found:"+username);
+        }
+        UserDetails userDetails = User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .roles(user.getRole().toString())
+                .build();
+        return userDetails;
     }
 
-    public UserModel getUserById(Integer id) throws UserNotFoundException {
-        UserEntity user = userRepo.findById(id).get();
-
-        if (user == null) {
-            throw new UserNotFoundException("User was not found!");
-        }
-
-        return UserModel.toModel(user);
+    @KafkaListener(topics = "sendUser")
+    public void getUser(UserModel userModel) {
+        this.userModel = userModel;
     }
 
-
-    public UserEntity updateUserName(Integer id, String name) throws UserNotFoundException, UserAlreadyExistsException {
-        UserEntity user = userRepo.findById(id).get();
-
-        if (user == null) {
-            throw new UserNotFoundException("User was not found!");
-        }
-
-        if (name == userRepo.findByUsername(name).getUsername()){
-            throw new UserAlreadyExistsException("User with that username already exists!");
-        }
-
-        user.setUsername(name);
-
-        return userRepo.save(user);
+    @KafkaListener(topics = "sendUsers")
+    public void getUsers(List<UserModel> usersModel) {
+        this.usersModel = usersModel;
     }
 
+    public UserModel getUserModel() {
+        return userModel;
+    }
+
+    public void setUserModel(UserModel userModel) {
+        this.userModel = userModel;
+    }
+
+    public List<UserModel> getUsersModel() {
+        return usersModel;
+    }
+
+    public void setUsersModel(List<UserModel> usersDto) {
+        this.usersModel = usersModel;
+    }
 }
